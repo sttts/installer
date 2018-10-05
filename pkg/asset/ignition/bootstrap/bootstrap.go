@@ -40,7 +40,6 @@ type bootstrapTemplateData struct {
 	EtcdCluster         string
 	EtcdctlImage        string
 	HyperkubeImage      string
-	KubeCoreRenderImage string
 	ReleaseImage        string
 }
 
@@ -156,7 +155,6 @@ func (a *Bootstrap) getTemplateData(installConfig *types.InstallConfig) (*bootst
 		CloudProvider:       getCloudProvider(installConfig),
 		CloudProviderConfig: getCloudProviderConfig(installConfig),
 		DebugConfig:         "",
-		KubeCoreRenderImage: "quay.io/coreos/kube-core-renderer-dev:3b6952f5a1ba89bb32dd0630faddeaf2779c9a85",
 		EtcdCertSignerImage: "quay.io/coreos/kube-etcd-signer-server:678cc8e6841e2121ebfdb6e2db568fce290b67d6",
 		EtcdctlImage:        "quay.io/coreos/etcd:v3.2.14",
 		BootkubeImage:       "quay.io/coreos/bootkube:v0.10.0",
