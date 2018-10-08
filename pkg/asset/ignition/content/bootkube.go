@@ -36,6 +36,9 @@ KUBE_APISERVER_OPERATOR_IMAGE=$(podman run --rm {{.ReleaseImage}} image cluster-
 KUBE_CONTROLLER_MANAGER_OPERATOR_IMAGE=$(podman run --rm {{.ReleaseImage}} image cluster-kube-controller-manager-operator)
 KUBE_SCHEDULER_OPERATOR_IMAGE=$(podman run --rm {{.ReleaseImage}} image cluster-kube-scheduler-operator)
 
+OPENSHIFT_HYPERSHIFT_IMAGE=$(podman run --rm {{.ReleaseImage}} image hypershift)
+OPENSHIFT_HYPERKUBE_IMAGE=$(podman run --rm {{.ReleaseImage}} image hyperkube)
+
 if [ ! -d cvo-bootstrap ]
 then
 	echo "Rendering Cluster Version Operator Manifests..."
@@ -62,6 +65,7 @@ then
 		"${KUBE_APISERVER_OPERATOR_IMAGE}" \
 		/usr/bin/cluster-kube-apiserver-operator render \
 		--manifest-etcd-server-urls={{.EtcdCluster}} \
+		--manifest-image=${OPENSHIFT_HYPERSHIFT_IMAGE} \
 		--asset-input-dir=/assets/tls \
 		--asset-output-dir=/assets/kube-apiserver-bootstrap \
 		--config-override-file=/usr/share/bootkube/manifests/config/config-overrides.yaml \
@@ -81,6 +85,7 @@ then
 		--volume "$PWD:/assets:z" \
 		"${KUBE_CONTROLLER_MANAGER_OPERATOR_IMAGE}" \
 		/usr/bin/cluster-kube-controller-manager-operator render \
+		--manifest-image=${OPENSHIFT_HYPERKUBE_IMAGE} \
 		--asset-input-dir=/assets/tls \
 		--asset-output-dir=/assets/kube-controller-manager-bootstrap \
 		--config-override-file=/usr/share/bootkube/manifests/config/config-overrides.yaml \
@@ -100,6 +105,7 @@ then
 		--volume "$PWD:/assets:z" \
 		"${KUBE_SCHEDULER_OPERATOR_IMAGE}" \
 		/usr/bin/cluster-kube-scheduler-operator render \
+		--manifest-image=${OPENSHIFT_HYPERKUBE_IMAGE} \
 		--asset-input-dir=/assets/tls \
 		--asset-output-dir=/assets/kube-scheduler-bootstrap \
 		--config-override-file=/usr/share/bootkube/manifests/config/config-overrides.yaml \
