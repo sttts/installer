@@ -58,7 +58,7 @@ then
 			--release-image="{{.ReleaseImage}}"
 
 	cp --recursive cvo-bootstrap/manifests .
-	cp --recursive cvo-bootstrap/bootstrap/bootstrap-pod.yaml /etc/kubernetes/manifests/
+	cp cvo-bootstrap/bootstrap/bootstrap-pod.yaml /etc/kubernetes/manifests/
 fi
 
 mkdir --parents ./{bootstrap-manifests,manifests}
@@ -81,8 +81,8 @@ then
 		--config-output-file=/assets/kube-apiserver-bootstrap/config
 
 	cp kube-apiserver-bootstrap/config /etc/kubernetes/bootstrap-configs/kube-apiserver-config.yaml
-	cp --recursive kube-apiserver-bootstrap/bootstrap-manifests/* bootstrap-manifests/
-	cp --recursive kube-apiserver-bootstrap/manifests/* manifests/
+	cp kube-apiserver-bootstrap/bootstrap-manifests/* bootstrap-manifests/
+	cp kube-apiserver-bootstrap/manifests/* manifests/
 fi
 
 if [ ! -d kube-controller-manager-bootstrap ]
@@ -101,8 +101,8 @@ then
 		--config-output-file=/assets/kube-controller-manager-bootstrap/config
 
 	cp kube-controller-manager-bootstrap/config /etc/kubernetes/bootstrap-configs/kube-controller-manager-config.yaml
-	cp --recursive kube-controller-manager-bootstrap/bootstrap-manifests/* bootstrap-manifests/
-	cp --recursive kube-controller-manager-bootstrap/manifests/* manifests/
+	cp kube-controller-manager-bootstrap/bootstrap-manifests/* bootstrap-manifests/
+	cp kube-controller-manager-bootstrap/manifests/* manifests/
 fi
 
 if [ ! -d kube-scheduler-bootstrap ]
@@ -121,8 +121,8 @@ then
 		--config-output-file=/assets/kube-scheduler-bootstrap/config
 
 	cp kube-scheduler-bootstrap/config /etc/kubernetes/bootstrap-configs/kube-scheduler-config.yaml
-	cp --recursive kube-scheduler-bootstrap/bootstrap-manifests/* bootstrap-manifests/
-	cp --recursive kube-scheduler-bootstrap/manifests/* manifests/
+	cp kube-scheduler-bootstrap/bootstrap-manifests/* bootstrap-manifests/
+	cp kube-scheduler-bootstrap/manifests/* manifests/
 fi
 
 if [ ! -d mco-bootstrap ]
@@ -148,7 +148,7 @@ then
 	# 2. read the default MachineConfigPools rendered by MachineConfigOperator
 	# 3. read any additional MachineConfigs that are needed for the default MachineConfigPools.
 	mkdir --parents /etc/mcc/bootstrap/
-	cp --recursive mco-bootstrap/manifests /etc/mcc/bootstrap/manifests
+	cp mco-bootstrap/manifests/* /etc/mcc/bootstrap/manifests
 	cp mco-bootstrap/machineconfigoperator-bootstrap-pod.yaml /etc/kubernetes/manifests/
 
 	# /etc/ssl/mcs/tls.{crt, key} are locations for MachineConfigServer's tls assets.
