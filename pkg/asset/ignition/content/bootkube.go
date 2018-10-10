@@ -81,8 +81,8 @@ then
 		--config-output-file=/assets/kube-apiserver-bootstrap/config
 
 	cp kube-apiserver-bootstrap/config /etc/kubernetes/bootstrap-configs/kube-apiserver-config.yaml
-	cp --recursive kube-controller-manager-bootstrap/bootstrap-manifests/* bootstrap-manifests/
-	cp --recursive kube-controller-manager-bootstrap/manifests manifests/
+	cp --recursive kube-apiserver-bootstrap/bootstrap-manifests/* bootstrap-manifests/
+	cp --recursive kube-apiserver-bootstrap/manifests manifests/
 fi
 
 if [ ! -d kube-controller-manager-bootstrap ]
