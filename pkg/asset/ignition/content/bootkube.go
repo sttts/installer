@@ -82,7 +82,7 @@ then
 
 	cp kube-apiserver-bootstrap/config /etc/kubernetes/bootstrap-configs/kube-apiserver-config.yaml
 	cp --recursive kube-apiserver-bootstrap/bootstrap-manifests/* bootstrap-manifests/
-	cp --recursive kube-apiserver-bootstrap/manifests manifests/
+	cp --recursive kube-apiserver-bootstrap/manifests/* manifests/
 fi
 
 if [ ! -d kube-controller-manager-bootstrap ]
@@ -102,7 +102,7 @@ then
 
 	cp kube-controller-manager-bootstrap/config /etc/kubernetes/bootstrap-configs/kube-controller-manager-config.yaml
 	cp --recursive kube-controller-manager-bootstrap/bootstrap-manifests/* bootstrap-manifests/
-	cp --recursive kube-controller-manager-bootstrap/manifests manifests/
+	cp --recursive kube-controller-manager-bootstrap/manifests/* manifests/
 fi
 
 if [ ! -d kube-scheduler-bootstrap ]
@@ -122,7 +122,7 @@ then
 
 	cp kube-scheduler-bootstrap/config /etc/kubernetes/bootstrap-configs/kube-scheduler-config.yaml
 	cp --recursive kube-scheduler-bootstrap/bootstrap-manifests/* bootstrap-manifests/
-	cp --recursive kube-scheduler-bootstrap/manifests manifests/
+	cp --recursive kube-scheduler-bootstrap/manifests/* manifests/
 fi
 
 if [ ! -d mco-bootstrap ]
