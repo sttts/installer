@@ -147,8 +147,8 @@ then
 	# 1. read the controller config rendered by MachineConfigOperator
 	# 2. read the default MachineConfigPools rendered by MachineConfigOperator
 	# 3. read any additional MachineConfigs that are needed for the default MachineConfigPools.
-	mkdir --parents /etc/mcc/bootstrap/
-	cp mco-bootstrap/manifests/* /etc/mcc/bootstrap/manifests
+	mkdir --parents /etc/mcc/bootstrap/manifests /etc/kubernetes/manifests/
+	cp mco-bootstrap/manifests/* /etc/mcc/bootstrap/manifests/
 	cp mco-bootstrap/machineconfigoperator-bootstrap-pod.yaml /etc/kubernetes/manifests/
 
 	# /etc/ssl/mcs/tls.{crt, key} are locations for MachineConfigServer's tls assets.
