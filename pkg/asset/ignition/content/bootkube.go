@@ -72,7 +72,6 @@ then
 		--manifest-image=${OPENSHIFT_HYPERSHIFT_IMAGE} \
 		--asset-input-dir=/assets/tls \
 		--asset-output-dir=/assets/kube-apiserver-bootstrap \
-		--config-override-file=/usr/share/bootkube/manifests/config/config-overrides.yaml \
 		--config-output-file=/assets/kube-apiserver-bootstrap/config
 
 	cp kube-apiserver-bootstrap/config /etc/kubernetes/bootstrap-configs/kube-apiserver-config.yaml
@@ -92,7 +91,6 @@ then
 		--manifest-image=${OPENSHIFT_HYPERKUBE_IMAGE} \
 		--asset-input-dir=/assets/tls \
 		--asset-output-dir=/assets/kube-controller-manager-bootstrap \
-		--config-override-file=/usr/share/bootkube/manifests/config/config-overrides.yaml \
 		--config-output-file=/assets/kube-controller-manager-bootstrap/config
 
 	cp kube-controller-manager-bootstrap/config /etc/kubernetes/bootstrap-configs/kube-controller-manager-config.yaml
@@ -112,7 +110,6 @@ then
 		--manifest-image=${OPENSHIFT_HYPERKUBE_IMAGE} \
 		--asset-input-dir=/assets/tls \
 		--asset-output-dir=/assets/kube-scheduler-bootstrap \
-		--config-override-file=/usr/share/bootkube/manifests/config/config-overrides.yaml \
 		--config-output-file=/assets/kube-scheduler-bootstrap/config
 
 	cp kube-scheduler-bootstrap/config /etc/kubernetes/bootstrap-configs/kube-scheduler-config.yaml
