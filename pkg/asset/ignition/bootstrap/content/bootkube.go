@@ -121,6 +121,223 @@ then
 	cp kube-scheduler-bootstrap/manifests/* manifests/
 fi
 
+# fake the not-existing checkpointer operator
+cat > manifests/checkpointer-role.yaml <<END
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-checkpointer
+  namespace: kube-system
+rules:
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: [""] # "" indicates the core API group
+  resources: ["secrets", "configmaps"]
+  verbs: ["get"]
+END
+cat > manifests/checkpointer-role-binding.yaml <<END
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: pod-checkpointer
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pod-checkpointer
+subjects:
+- kind: ServiceAccount
+  name: pod-checkpointer
+  namespace: kube-system
+END
+cat > manifests/checkpointer-sa.yaml <<END
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: kube-system
+  name: pod-checkpointer
+END
+cat > manifests/daemonset-checkpointer.yaml <<END
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    k8s-app: pod-checkpointer
+    tectonic-operators.coreos.com/managed-by: kube-core-operator
+    tier: control-plane
+  name: pod-checkpointer
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      tier: control-plane
+      k8s-app: pod-checkpointer
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+        checkpointer.alpha.coreos.com/checkpoint: "true"
+      labels:
+        k8s-app: pod-checkpointer
+        tier: control-plane
+    spec:
+      containers:
+      - command:
+        - /checkpoint
+        - --lock-file=/var/run/lock/pod-checkpointer.lock
+        - --kubeconfig=/etc/checkpointer/kubeconfig
+        - --checkpoint-grace-period=5m
+        - --container-runtime-endpoint=unix:///var/run/crio/crio.sock
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        image: quay.io/coreos/pod-checkpointer:9dc83e1ab3bc36ca25c9f7c18ddef1b91d4a0558
+        imagePullPolicy: Always
+        name: pod-checkpointer
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/checkpointer
+          name: kubeconfig
+        - mountPath: /etc/kubernetes
+          name: etc-kubernetes
+        - mountPath: /var/run
+          name: var-run
+      serviceAccountName: pod-checkpointer
+      hostNetwork: true
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      restartPolicy: Always
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Exists
+      volumes:
+      - name: kubeconfig
+        secret:
+          secretName: controller-manager-kubeconfig
+      - hostPath:
+          path: /etc/kubernetes
+        name: etc-kubernetes
+      - hostPath:
+          path: /var/run
+        name: var-run
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+END
+
+# fake kube-proxy creation that should be done by the tectonic-network-operator
+cat > manifests/kube-system-rbac-role-binding.yaml <<END
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:default-sa
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: default
+  namespace: kube-system
+END
+cat > manifests/kube-proxy-service-account.yaml <<END
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: kube-system
+  name: kube-proxy
+END
+cat > manifests/kube-proxy-daemonset.yaml <<END
+apiVersion: apps/v1beta2
+kind: DaemonSet
+metadata:
+  labels:
+    k8s-app: kube-proxy
+    tectonic-operators.coreos.com/managed-by: kube-core-operator
+    tier: node
+  name: kube-proxy
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: kube-proxy
+      tier: node
+  template:
+    metadata:
+      labels:
+        k8s-app: kube-proxy
+        tier: node
+    spec:
+      containers:
+      - command:
+        - ./hyperkube
+        - proxy
+        - --cluster-cidr=10.3.0.0/16
+        - --hostname-override=$(NODE_NAME)
+        - --kubeconfig=/etc/kubernetes/kubeconfig
+        - --proxy-mode=iptables
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        image: quay.io/coreos/hyperkube:v1.9.3_coreos.0
+        name: kube-proxy
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - mountPath: /etc/ssl/certs
+          name: ssl-certs-host
+          readOnly: true
+        - mountPath: /etc/kubernetes
+          name: kubeconfig
+          readOnly: true
+      hostNetwork: true
+      serviceAccountName: kube-proxy
+      tolerations:
+      - operator: Exists
+      volumes:
+      - hostPath:
+          path: /etc/ssl/certs
+        name: ssl-certs-host
+      - name: kubeconfig
+        secret:
+          defaultMode: 420
+          secretName: controller-manager-kubeconfig
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+END
+cat > manifests/kube-proxy-role-binding.yaml <<END
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kube-proxy
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:node-proxier # Automatically created system role.
+subjects:
+- kind: ServiceAccount
+  name: kube-proxy
+  namespace: kube-system
+END
+
 if [ ! -d mco-bootstrap ]
 then
 	echo "Rendering MCO manifests..."
