@@ -15,6 +15,8 @@ After=kubelet.service
 
 [Service]
 WorkingDirectory=/opt/tectonic
+# TODO: enable restart when bootkube script actually supports this
+Restart=no
 
 ExecStart=/opt/tectonic/bootkube.sh
 # Workaround for https://github.com/opencontainers/runc/pull/1807
